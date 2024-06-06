@@ -27,6 +27,15 @@ Improvements are welcome.
 
 # Version history
 
+## 2.0.4
+
+* Maintenance release to get F-Droid to rebuild.
+
+## 2.0.3
+
+* Fixes issues when font size is set to huge.
+* Adds test suite for controller.
+
 ## 2.0.2
 
 * Fixes visual glitches on Jelly Bean (Android 4.1) on Galaxy Nexus.
