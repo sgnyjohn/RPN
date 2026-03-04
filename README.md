@@ -16,12 +16,6 @@ my desk, and I wrote the program to “scratch my itch”. If you need
 that stuff, there are at least half a dozen scientific calculators
 available for free in the Android Market, including an HP48 emulator.
 
-If you just want to install the calculator, you can do that easily; see 
-[RPN on the Android Market](market://search?q=pname:com.ath0.rpn).
-
-If you want to read more about why I wrote this calculator, and why it's the
-way it is, [my web site has details](http://meta.ath0.com/software/rpn/).
-
 Source code licensed under the GNU Public License, Version 3 or later.
 Improvements are welcome.
 
