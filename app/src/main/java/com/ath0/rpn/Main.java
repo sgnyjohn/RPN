@@ -16,6 +16,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -111,6 +112,8 @@ public class Main extends Activity implements OnKeyListener {
           for (int i = 0; i < scale; i++) {
             text.append('0');
           }
+        } else  if (scale < 0) {
+          text.append('.');
         }
       } else {
         text = this.stack.toString(this.screenlines);
@@ -127,7 +130,7 @@ public class Main extends Activity implements OnKeyListener {
     }
     disp.setLines(this.screenlines);
     disp.setText(text);
-    scrollToRight();
+    scrollToAlign();
   }
 
   /**
@@ -221,14 +224,36 @@ public class Main extends Activity implements OnKeyListener {
    * of buffer update, so that the update is actually displayed. Uses a queued
    * thread for technical reasons.
    */
-  private void scrollToRight() {
-    // Enqueue the scrolling to happen after next layout
-    ((HorizontalScrollView) findViewById(R.id.Scroll)).post(new Runnable() {
+  private void scrollToAlign() {
+    // Busca a View uma vez só para economizar processamento
+    final HorizontalScrollView scrollView = findViewById(R.id.Scroll);
+    final int scale  = this.stack.getScale();
+
+    scrollView.post(new Runnable() {
       @Override
       public void run() {
-        ((HorizontalScrollView) findViewById(R.id.Scroll)).fullScroll(View.FOCUS_RIGHT);
+        // Correção: Usa MainActivity.this para acessar a pilha da Activity
+        int direction = scale > -1 ? View.FOCUS_RIGHT : View.FOCUS_LEFT;
+        //Log.d("RPN","direction "+(direction==);
+        scrollView.fullScroll(direction);
       }
     });
+
+    TextView meuTexto = findViewById(R.id.Display);
+    // ...
+    // 1. Pega os parâmetros atuais (convertendo para o tipo do container pai)
+    //android.widget.LinearLayout.LayoutParams params = (android.widget.LinearLayout.LayoutParams)
+    //        meuTexto.getLayoutParams();
+
+    // 2. Altera o gravity do layout
+    //params.gravity = scale<0?Gravity.START:Gravity.END; // Joga o TextView para a direita da tela
+    // 3. Aplica os novos parâmetros de volta no TextView
+    //meuTexto.setLayoutParams(params);
+    //if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+    //  meuTexto.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
+    //}
+    meuTexto.setGravity(Gravity.BOTTOM | (scale<0?Gravity.START:Gravity.END));
+
   }
 
   /**

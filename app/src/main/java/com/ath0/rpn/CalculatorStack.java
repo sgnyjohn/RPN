@@ -8,6 +8,8 @@ import java.util.Stack;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 /**
  * Model for RPN calculator. 
  * Implements a stack and a set of typical operations on it.
@@ -42,7 +44,7 @@ public class CalculatorStack implements Serializable {
 
   public CalculatorStack() {
     super();
-    this.stack = new Stack<BigDecimal>();
+    this.stack = new Stack<>();
   }
 
   /**
@@ -89,20 +91,25 @@ public class CalculatorStack implements Serializable {
    * implement formatNumber there.
    */
   @Override
-  public String toString() {
+  public @NonNull String toString() {
     return this.toString(1).toString().replaceAll(",", "");
   }
 
   /**
    * Formats a BigDecimal number to a fixed number of decimal places, and adds 
    * thousands commas.
-   * @param number
-   * @return
+   * @param number bigDecimal
+   * @return String
    */
   private String formatNumber(final BigDecimal number) {
     final StringBuilder result = new StringBuilder(TYPICAL_LENGTH);
-    result.append(number.setScale(this.scale, 
-        RoundingMode.HALF_UP).toPlainString());
+    // permitir ponto flutuante.
+    if (this.scale > -1) {
+      result.append(number.setScale(this.scale,
+              RoundingMode.HALF_UP).toPlainString());
+    } else {
+      result.append(number.toString());
+    }
     if (this.scale > 0) {
       if (result.indexOf(".") == -1) {
         result.append('.');
@@ -118,7 +125,7 @@ public class CalculatorStack implements Serializable {
       dot = result.length();
     }
     int lowindex = 0;
-    if (result.charAt(0) == '-') {
+    if (result.length()>0 && result.charAt(0) == '-') {
       lowindex = 1;
     }
     for (int i = dot - 3; i > lowindex; i -= 3) {
@@ -290,6 +297,7 @@ public class CalculatorStack implements Serializable {
    */
   public void setScale(final int newscale) {
     this.scale = newscale;
+    Log.d("RPN","scale "+this.scale);
   }
 
   /**
@@ -308,7 +316,7 @@ public class CalculatorStack implements Serializable {
 
   /**
    * Gets the current display scale.
-   * @return
+   * @return int
    */
   public int getScale() {
     return this.scale;
@@ -323,7 +331,7 @@ public class CalculatorStack implements Serializable {
 
     if (!this.stack.isEmpty()) {
       try {
-        BigDecimal x = sqrt(this.stack.pop(), INTERNAL_SCALE);
+        BigDecimal x = sqrt(this.stack.pop()); //, INTERNAL_SCALE);
         this.stack.push(x);
       } catch (RuntimeException e) {
         result = e.getMessage();
@@ -332,16 +340,13 @@ public class CalculatorStack implements Serializable {
     return result;
   }
 
-  /**
-   * Computes the square root of x to a given scale, x >= 0.
-   * Use Newton's algorithm.
-   * Taken from "Java Number Cruncher: The Java Programmer's Guide to 
-   * Numerical Computing" (Ronald Mak, 2003) http://goo.gl/CXpi2
-   * @param x the value of x
-   * @param scale the desired scale of the result
-   * @return the result value
-   */
-  private static BigDecimal sqrt(final BigDecimal x, final int scale)
+  /// Computes the square root of x to a given scale, x >= 0.
+  /// Use Newton's algorithm.
+  /// Taken from "Java Number Cruncher: The Java Programmer's Guide to
+  /// Numerical Computing" (Ronald Mak, 2003) 'http://goo.gl/CXpi2'
+  /// @param x the value of x
+  /// @return the result value
+  private static BigDecimal sqrt(final BigDecimal x) //, final int scale)
   {
     // Check that x >= 0.
     if (x.signum() < 0) {
@@ -352,7 +357,7 @@ public class CalculatorStack implements Serializable {
     }
 
     // n = x*(10^(2*scale))
-    BigInteger n = x.movePointRight(scale << 1).toBigInteger();
+    BigInteger n = x.movePointRight(INTERNAL_SCALE << 1).toBigInteger();
 
     // The first approximation is the upper half of n.
     int bits = (n.bitLength() + 1) >> 1;
@@ -370,7 +375,7 @@ public class CalculatorStack implements Serializable {
       Thread.yield();
     } while (ix.compareTo(ixPrev) != 0);
 
-    return new BigDecimal(ix, scale);
+    return new BigDecimal(ix, INTERNAL_SCALE);
   }
 
   /**
